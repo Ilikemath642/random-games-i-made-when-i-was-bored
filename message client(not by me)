@@ -1,0 +1,39 @@
+import socket
+import threading
+
+# Function to send messages to the server
+def send_messages(sock):
+    while True:
+        message = input()
+        if message.lower() == "exit":
+            print("You have left the chat.")
+            sock.close()
+            break
+        sock.sendall(message.encode('utf-8'))
+
+def main():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_ip = "192.168.1.80"
+    client.connect((server_ip, 12345))
+    print("Connected to the server.")
+
+    # Prompt user for a username
+    username = input("Enter your username: ")
+    client.sendall(username.encode('utf-8'))
+
+    # Start a thread to handle sending messages
+    threading.Thread(target=send_messages, args=(client,)).start()
+
+    # Main loop to receive messages from server
+    while True:
+        try:
+            message = client.recv(1024).decode('utf-8')
+            if not message:
+                break
+            print(message)
+        except:
+            print("Connection closed.")
+            break
+
+if __name__ == "__main__":
+    main()
